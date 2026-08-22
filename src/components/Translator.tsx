@@ -187,7 +187,7 @@ export default function Translator({
 
         {/* ---------- CONTROLS ---------- */}
         <div className="flex flex-row flex-wrap items-center justify-center gap-2 lg:flex-col lg:gap-2.5 lg:py-6">
-          <button type="button" onClick={() => onTranslate()} className="btn-primary lg:h-12 lg:w-12 lg:rounded-full lg:p-0" aria-label="Translate">
+          <button type="button" onClick={() => onTranslate()} className="btn-primary lg:h-16 lg:w-16 lg:rounded-full lg:p-0" aria-label="Translate">
             <span className="lg:hidden">Translate</span>
             <ChevronRight size={20} strokeWidth={2.4} className="hidden lg:block" aria-hidden />
           </button>
