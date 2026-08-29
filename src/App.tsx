@@ -7,6 +7,7 @@ import { decodeMorse, encodeText, type MorseWords } from './lib/morse';
 import { MorseEngine } from './lib/player';
 import { copyText, loadJSON, removeKeys, saveJSON, uid } from './lib/utils';
 import { cn } from './utils/cn';
+import gsap from "gsap";
 
 export type Mode = 'm2t' | 't2m';
 export type Theme = 'simple' | 'cyber';
@@ -252,10 +253,47 @@ export default function App() {
 
   const session = sessions[mode];
 
+  const navRef = useRef<HTMLElement>(null);
+
+ useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (!navRef.current) return;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 25) {
+        // Scroll Down → Hide Navbar
+        gsap.to(navRef.current, {
+          yPercent: -100,
+          duration: 0.3,
+          ease: "ease-in-out",
+        });
+      } else {
+        // Scroll Up → Show Navbar
+        gsap.to(navRef.current, {
+          yPercent: 0,
+          duration: 0.3,
+          ease: "eaes-in-out",
+        });
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+  
   return (
     <div className="min-h-screen">
       {/* ================= HEADER ================= */}
       <header
+        ref={navRef}
         className="sticky top-0 z-40 border-b backdrop-blur-md"
         style={{ background: 'color-mix(in srgb, var(--bg) 80%, transparent)', borderColor: 'var(--line)' }}
       >
