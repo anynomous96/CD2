@@ -77,19 +77,22 @@ function CharSheet({ engine }: Props) {
         )}
       >
         <div className="overflow-hidden">
-          <div className="seg mb-3">
+          <div className="seg seg-slide mb-3">
+            <div className={cn("seg-slide-bg", showPunct && "punct")} />
             <button
               type="button"
-              className={cn("!min-h-10", !showPunct && "active")}
+              className={cn("!min-h-10 active")}
               onClick={() => setShowPunct(false)}
+              aria-pressed={!showPunct}
             >
               A–Z · 0–9
             </button>
+            <div className="seg-divider" aria-hidden="true" />
             <button
               type="button"
-              id="ss"
               className={cn("!min-h-10", showPunct && "active")}
               onClick={() => setShowPunct(true)}
+              aria-pressed={showPunct}
             >
               <span className="text-[21px] font-bold pr-2">+</span> Punctuation
             </button>

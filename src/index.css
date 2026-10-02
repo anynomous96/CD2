@@ -288,6 +288,75 @@ body {
   box-shadow: 0 0 18px rgba(0, 255, 178, 0.3);
 }
 
+/* merged segmented tabs (no gap, shared border) */
+.seg-merge {
+  gap: 0;
+}
+.seg-merge button {
+  border-radius: 0;
+}
+.seg-merge button:first-child {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+.seg-merge button:last-child {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.seg-merge button:not(:last-child) {
+  border-right-color: transparent;
+}
+
+/* sliding expanding selection in a unified tab bar */
+.seg-slide {
+  position: relative;
+  gap: 0;
+  overflow: hidden;
+}
+.seg-slide button {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  border-radius: 0;
+  background: transparent;
+  border-color: transparent;
+  transition: color 0.3s ease;
+}
+.seg-slide button.active {
+  background: transparent;
+  color: var(--bg);
+}
+:root[data-theme='cyber'] .seg-slide button.active {
+  color: var(--accent-ink);
+  background: transparent;
+}
+.seg-slide-bg {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  bottom: 4px;
+  width: calc(50% - 4px);
+  background: var(--ink);
+  border-radius: calc(var(--radius-sm) - 2px);
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+  pointer-events: none;
+}
+.seg-slide-bg.punct {
+  width: calc(100% - 8px);
+}
+:root[data-theme='cyber'] .seg-slide-bg {
+  background: var(--accent);
+  box-shadow: 0 0 18px rgba(0, 255, 178, 0.3);
+}
+.seg-divider {
+  width: 0px;
+  align-self: stretch;
+  margin: 10px 0;
+  background: var(--line);
+  opacity: 0.5;
+  z-index: 1;
+  pointer-events: none;
+}
+
 /* morse symbol token */
 .sym {
   display: grid;
