@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AudioWaveform, Type, Minus, Zap } from 'lucide-react';
+import { AudioWaveform, Type, Minus, Zap, Download, X, Share } from 'lucide-react';
 import Translator from './components/Translator';
 import SavedPanel from './components/SavedPanel';
 import CharSheet from './components/CharSheet';
@@ -36,6 +36,12 @@ const K_THEME = 'ditdah.theme';
 const K_SESSIONS = 'ditdah.sessions';
 const K_SAVES = 'ditdah.saves';
 const MAX_SAVES = 100;
+const K_INSTALL_DISMISSED = 'ditdah.install-dismissed';
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+};
 
 const emptySession = (): Session => ({ input: '', output: '', issues: [], words: [], stale: false });
 const freshSessions = (): Record<Mode, Session> => ({ m2t: emptySession(), t2m: emptySession() });
@@ -106,6 +112,9 @@ export default function App() {
     return base;
   });
   const [toast, setToast] = useState<{ id: number; msg: string; tone: 'ok' | 'err' } | null>(null);
+  const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
+  const [showInstall, setShowInstall] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   const engineRef = useRef<MorseEngine | null>(null);
   if (!engineRef.current) engineRef.current = new MorseEngine();
@@ -122,6 +131,41 @@ export default function App() {
     window.clearTimeout(toastTimer.current);
     setToast({ id: Date.now(), msg, tone });
     toastTimer.current = window.setTimeout(() => setToast(null), 2300);
+  }, []);
+
+  /* ---------- installable PWA ---------- */
+  useEffect(() => {
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as Navigator & { standalone?: boolean }).standalone;
+    const ios = /iphone|ipad|ipod/i.test(window.navigator.userAgent) && !standalone;
+    setIsIOS(Boolean(ios));
+    const timer = !standalone && !localStorage.getItem(K_INSTALL_DISMISSED)
+      ? window.setTimeout(() => setShowInstall(true), 2800)
+      : undefined;
+    const onBeforeInstall = (event: Event) => {
+      event.preventDefault();
+      setInstallEvent(event as BeforeInstallPromptEvent);
+      if (!localStorage.getItem(K_INSTALL_DISMISSED)) setShowInstall(true);
+    };
+    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    window.addEventListener('appinstalled', () => { setInstallEvent(null); setShowInstall(false); });
+    return () => {
+      if (timer) window.clearTimeout(timer);
+      window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+    };
+  }, []);
+
+  const handleInstall = useCallback(async () => {
+    if (!installEvent) return;
+    await installEvent.prompt();
+    const choice = await installEvent.userChoice;
+    if (choice.outcome === 'accepted') showToast('DitDah installed — welcome aboard');
+    setInstallEvent(null);
+    setShowInstall(false);
+  }, [installEvent, showToast]);
+
+  const dismissInstall = useCallback(() => {
+    localStorage.setItem(K_INSTALL_DISMISSED, '1');
+    setShowInstall(false);
   }, []);
 
   /* ---------- theme ---------- */
@@ -311,16 +355,40 @@ export default function App() {
             </div>
           </div>
 
-          <div className="seg w-[200px]" role="tablist" aria-label="Theme">
+          <div className="flex items-center gap-2">
+            {(installEvent || isIOS) && !showInstall && (
+              <button type="button" className="install-trigger" onClick={() => setShowInstall(true)}>
+                <Download size={14} /> <span className="hidden sm:inline">Install app</span>
+              </button>
+            )}
+            <div className="seg w-[200px]" role="tablist" aria-label="Theme">
             <button type="button" className={cn(theme === 'simple' && 'active')} onClick={() => setTheme('simple')}>
               <Minus size={13} /> Simple
             </button>
             <button type="button" className={cn(theme === 'cyber' && 'active')} onClick={() => setTheme('cyber')}>
               <Zap size={13} /> Cyber
             </button>
+            </div>
           </div>
         </div>
       </header>
+
+      {showInstall && (installEvent || isIOS) && (
+        <aside className="install-card" role="dialog" aria-label="Install DitDah">
+          <button className="install-close" onClick={dismissInstall} aria-label="Dismiss install prompt"><X size={16} /></button>
+          <div className="install-icon"><Download size={20} /></div>
+          <div className="min-w-0 flex-1">
+            <p className="label-caps">Take DitDah with you</p>
+            <h2 className="mt-1 text-[16px] font-bold">Install the app</h2>
+            {isIOS && !installEvent ? (
+              <p className="mt-1 text-[12px] leading-relaxed text-[var(--ink-2)]">Tap <Share size={13} className="mx-0.5 inline" /> Share, then <b>Add to Home Screen</b>.</p>
+            ) : (
+              <p className="mt-1 text-[12px] leading-relaxed text-[var(--ink-2)]">Offline access, faster launch, and a focused workspace.</p>
+            )}
+          </div>
+          {installEvent && <button className="btn-primary install-action" onClick={handleInstall}><Download size={15} /> Install</button>}
+        </aside>
+      )}
 
       <main className="mx-auto w-full max-w-6xl px-4 pb-20 pt-7 sm:px-6 sm:pt-10">
         {/* ================= HERO + MODE ================= */}
