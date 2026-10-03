@@ -1,0 +1,17 @@
+{
+  "name": "DitDah — Morse Code Translator",
+  "short_name": "DitDah",
+  "description": "A fast, precise Morse code translator with a live audio transmitter.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4f3ee",
+  "theme_color": "#f4f3ee",
+  "lang": "en",
+  "categories": ["utilities", "education"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
